@@ -1,0 +1,28 @@
+{
+  "name": "api-actual",
+  "version": "0.1.0",
+  "description": "Actual Budget backend for api.masu.rs",
+  "type": "module",
+  "main": "dist/main.js",
+  "files": [
+    "dist",
+    "src/db/migrations"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsx watch src/main.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1",
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
+  }
+}

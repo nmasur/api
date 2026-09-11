@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.dev/
+.direnv/
+result
+result-*
+*.log
+.DS_Store
