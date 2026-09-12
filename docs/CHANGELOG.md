@@ -5,6 +5,7 @@
 - Initialized flake development environment (`flake.nix`, `flake.lock`) supporting Darwin and Linux across x86_64 and aarch64 with Node.js 22, TypeScript, PostgreSQL 15, and nixfmt.
 - Added project documentation, MIT license, `.envrc`, `.gitignore`, and `scripts/dev-db.sh` for local PostgreSQL cluster management.
 - Documented initial Architecture Decision Records (`0001` through `0006`) in `docs/adrs/`.
+- Added `docs/LOCAL_TESTING.md`: quickstart guide for running and testing the API locally with `curl` and browser.
 - Created `backends/actual` HTTP service skeleton with Fastify:
   - Strict JSON logging with `req_id`, `time`, `level`, `msg` and header redaction.
   - Constant-time API key verification (`X-API-Key`) supporting key rotation via `API_KEYS`.
