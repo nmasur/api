@@ -4,19 +4,28 @@ export interface ErrorResponseBody {
   error: string;
   message: string;
   details?: unknown;
+  accounts?: string[];
 }
 
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly errorCode: string;
   public readonly details?: unknown;
+  public readonly accounts?: string[];
 
-  constructor(statusCode: number, errorCode: string, message: string, details?: unknown) {
+  constructor(statusCode: number, errorCode: string, message: string, details?: unknown, accounts?: string[]) {
     super(message);
     this.name = 'AppError';
     this.statusCode = statusCode;
     this.errorCode = errorCode;
     this.details = details;
+    this.accounts = accounts;
+  }
+}
+
+export class AccountUnresolvedError extends AppError {
+  constructor(message: string, accounts: string[]) {
+    super(400, 'account_unresolved', message, undefined, accounts);
   }
 }
 
@@ -68,6 +77,9 @@ export function handleFastifyError(
     };
     if (error.details !== undefined) {
       body.details = error.details;
+    }
+    if (error.accounts !== undefined) {
+      body.accounts = error.accounts;
     }
     reply.status(error.statusCode).send(body);
     return;

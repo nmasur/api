@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-12: Support inline card mapping and unmapped account resolution
+
+- Added `save_card_mapping` field to `POST /budgets/:budget/transactions` body to allow mapping an account to a card inline.
+- Added `AccountUnresolvedError` to return `{"error": "account_unresolved", "accounts": [...]}` when a card is unmapped and no account is provided, fetching available accounts from Actual Budget.
+
 ## 2026-09-12: Fix Nix flake check and VM test suite
 
 - Resolved `nixpkgs.overlays` conflict in NixOS VM check (`nix/checks/actual-vm.nix`) by removing redundant node overlay that clashed with read-only NixOS evaluation when `pkgs` is passed to `runNixOSTest`.

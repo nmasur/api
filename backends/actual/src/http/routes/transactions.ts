@@ -4,7 +4,7 @@ import type pg from 'pg';
 import type { ActualClient } from '../../actual/client.js';
 import type { ActualTransaction } from '../../actual/types.js';
 import type { Config } from '../../config.js';
-import { AppError, BadRequestError, NotFoundError, UpstreamError } from '../errors.js';
+import { AppError, BadRequestError, NotFoundError, UpstreamError, AccountUnresolvedError } from '../errors.js';
 
 export interface TransactionsRouteOptions {
   config: Config;
@@ -23,6 +23,7 @@ export interface CreateTransactionBody {
   category?: string;
   cleared?: boolean;
   idempotency_key?: string;
+  save_card_mapping?: boolean;
 }
 
 function getTodayInTz(tz?: string): string {
@@ -109,9 +110,21 @@ export function createTransactionsRoutes(options: TransactionsRouteOptions): Fas
       }
 
       if (!resolvedAccount) {
-        throw new BadRequestError('Account could not be resolved', {
-          error: 'account_unresolved',
+        const availableAccounts = await client.withBudget(normalizedBudget, async (api) => {
+          const accounts = await api.getAccounts();
+          return accounts.filter((a) => !a.closed).map((a) => a.name);
         });
+        throw new AccountUnresolvedError('Account could not be resolved', availableAccounts);
+      }
+
+      if (body.card && body.account && body.save_card_mapping) {
+        await pool.query(
+          `INSERT INTO card_mappings (budget, card_name, account_name)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (budget, card_name)
+           DO UPDATE SET account_name = EXCLUDED.account_name`,
+          [normalizedBudget, body.card.trim(), body.account.trim()]
+        );
       }
 
       // 2. Compute Actual amount (in cents)
