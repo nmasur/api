@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-12: Implement NixOS modules and VM integration test
+
+- Created `services.api` top-level NixOS module in `nix/modules/api.nix` with dynamic Caddy JSON routes generation and local PostgreSQL management options.
+- Created `services.api.backends.actual` module in `nix/modules/backends/actual.nix` with hardened systemd service, credential loading, peer PostgreSQL authentication, and multi-budget environment support.
+- Added Nix library helpers in `nix/lib.nix` and exposed `nixosModules.default` from flake.
+- Added NixOS VM test in `nix/checks/actual-vm.nix` covering systemd service startup, unauthenticated 401 rejection, authenticated requests, and automatic schema migrations.
+
 ## 2026-09-12: Package api-actual with Nix buildNpmPackage, overlay, and flake outputs
 
 - Packaged `api-actual` in `backends/actual/package.nix` with `buildNpmPackage`, native sqlite/node-gyp dependencies, and embedded migration SQL files.
