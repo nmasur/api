@@ -2,14 +2,17 @@ import { randomUUID } from 'node:crypto';
 import Fastify, { LogController, type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import type pg from 'pg';
 import type { Config } from '../config.js';
+import type { ActualClient } from '../actual/client.js';
 import { createAuthHook } from './auth.js';
 import { handleFastifyError, UnsupportedMediaTypeError } from './errors.js';
 import { createHealthRoutes } from './routes/health.js';
+import { createBudgetRoutes } from './routes/budgets.js';
 import { pingRoutes } from './routes/ping.js';
 
 export interface BuildServerOptions {
   config: Config;
   pool?: pg.Pool;
+  actualClient?: ActualClient;
   checkActualServer?: () => Promise<boolean>;
   logger?: FastifyServerOptions['logger'];
 }
@@ -74,9 +77,28 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
     });
   });
 
+  const defaultCheckActualServer = config.actualServerUrl
+    ? async () => {
+        try {
+          const res = await fetch(config.actualServerUrl!, {
+            signal: AbortSignal.timeout(3000),
+          });
+          return res.status < 500;
+        } catch {
+          return false;
+        }
+      }
+    : undefined;
+
+  const actualServerCheck = checkActualServer !== undefined ? checkActualServer : defaultCheckActualServer;
+
   // Register routes
-  fastify.register(createHealthRoutes({ pool, checkActualServer }));
+  fastify.register(createHealthRoutes({ pool, checkActualServer: actualServerCheck }));
   fastify.register(pingRoutes);
+
+  if (options.actualClient) {
+    fastify.register(createBudgetRoutes({ config, client: options.actualClient }));
+  }
 
   return fastify;
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-09-12: Implement Actual client with multi-budget mutex and budget query endpoints
+
+- Created `@actual-app/api` wrapper (`src/actual/client.ts`) with `AsyncMutex` for single-process multi-budget switching, caching, and lifecycle management.
+- Added budget query routes in `src/http/routes/budgets.ts`:
+  - `GET /budgets`: list configured budget names.
+  - `GET /budgets/:budget/accounts`: proxy `getAccounts()` with closed/offbudget flags.
+  - `GET /budgets/:budget/payees`: proxy `getPayees()`.
+  - `GET /budgets/:budget/categories`: proxy `getCategories()`.
+  - `POST /budgets/:budget/sync`: force download and synchronization with timing.
+- Added test suite in `test/budgets.test.ts` verifying concurrency mutex, budget switching, caching, and route behavior.
+
 ## 2026-09-12: Implement database migrations and initial schema
 
 - Added database migration runner (`src/db/migrate.ts`) tracking applied migrations in `schema_migrations` with sha256 checksums and transaction safety.

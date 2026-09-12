@@ -1,4 +1,5 @@
 import { loadConfig } from './config.js';
+import { ActualClient } from './actual/client.js';
 import { runMigrations } from './db/migrate.js';
 import { createPool } from './db/pool.js';
 import { buildServer } from './http/server.js';
@@ -6,7 +7,15 @@ import { buildServer } from './http/server.js';
 async function main(): Promise<void> {
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
-  const server = buildServer({ config, pool });
+  const actualClient = new ActualClient({
+    stateDir: config.stateDir,
+    serverUrl: config.actualServerUrl,
+    password: config.actualPassword,
+    budgets: config.budgets,
+    pool,
+  });
+
+  const server = buildServer({ config, pool, actualClient });
 
   let isShuttingDown = false;
 
@@ -25,6 +34,8 @@ async function main(): Promise<void> {
     try {
       await server.close();
       server.log.info('HTTP server closed');
+      await actualClient.shutdown();
+      server.log.info('Actual client shut down');
       await pool.end();
       server.log.info('Database pool drained');
       process.exit(0);
@@ -46,6 +57,14 @@ async function main(): Promise<void> {
     }
   } catch (err) {
     server.log.error({ err }, 'Failed to run database migrations');
+    await pool.end();
+    process.exit(1);
+  }
+
+  try {
+    await actualClient.init();
+  } catch (err) {
+    server.log.error({ err }, 'Failed to initialize Actual client');
     await pool.end();
     process.exit(1);
   }

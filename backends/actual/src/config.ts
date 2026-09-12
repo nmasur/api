@@ -1,5 +1,12 @@
 import { randomBytes } from 'node:crypto';
 
+export interface BudgetConfig {
+  name: string;
+  syncId: string;
+  encryptionPassword?: string;
+  defaultAccount?: string;
+}
+
 export interface Config {
   port: number;
   host: string;
@@ -9,7 +16,8 @@ export interface Config {
   logLevel: string;
   actualServerUrl?: string;
   actualPassword?: string;
-  budgets: string[];
+  budgets: Map<string, BudgetConfig>;
+  tz?: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -36,7 +44,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (apiKeys.length === 0 && env.NODE_ENV !== 'production') {
     const devKey = 'dev-key-' + randomBytes(16).toString('hex');
     apiKeys.push(devKey);
-    // In dev, warn that a temporary key was generated
     console.warn(
       JSON.stringify({
         level: 'warn',
@@ -48,11 +55,27 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new Error('API_KEYS environment variable is required in production');
   }
 
-  const budgets = env.BUDGETS
+  const budgetNames = env.BUDGETS
     ? env.BUDGETS.split(',')
-        .map((b) => b.trim())
+        .map((b) => b.trim().toLowerCase())
         .filter((b) => b.length > 0)
     : [];
+
+  const budgets = new Map<string, BudgetConfig>();
+  for (const name of budgetNames) {
+    const upper = name.toUpperCase();
+    const syncId = env[`ACTUAL_SYNC_ID_${upper}`];
+    if (!syncId && env.NODE_ENV === 'production') {
+      throw new Error(`Missing ACTUAL_SYNC_ID_${upper} environment variable for budget '${name}'`);
+    }
+
+    budgets.set(name, {
+      name,
+      syncId: syncId || `dev-sync-id-${name}`,
+      encryptionPassword: env[`ACTUAL_ENCRYPTION_PASSWORD_${upper}`],
+      defaultAccount: env[`DEFAULT_ACCOUNT_${upper}`],
+    });
+  }
 
   return {
     port,
@@ -64,5 +87,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     actualServerUrl: env.ACTUAL_SERVER_URL,
     actualPassword: env.ACTUAL_PASSWORD,
     budgets,
+    tz: env.TZ,
   };
 }

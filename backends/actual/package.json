@@ -15,6 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@actual-app/api": "^26.9.0",
     "fastify": "^5.2.1",
     "pg": "^8.13.3"
   },
