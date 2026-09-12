@@ -97,8 +97,12 @@ in
       after = [
         "network.target"
         "postgresql.service"
-      ];
-      wants = [ "postgresql.service" ];
+      ]
+      ++ lib.optional config.services.api.postgres.createLocally "postgresql-setup.service";
+      wants = [
+        "postgresql.service"
+      ]
+      ++ lib.optional config.services.api.postgres.createLocally "postgresql-setup.service";
 
       environment = {
         PORT = toString cfg.port;

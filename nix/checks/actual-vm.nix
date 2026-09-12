@@ -18,15 +18,42 @@ pkgs.testers.runNixOSTest {
       fakeSyncIdFile = pkgs.writeText "fake-sync-id" ''
         ACTUAL_SYNC_ID_TESTBUDGET=sync-vm-test-12345
       '';
+      fakeActualServer = pkgs.writeScript "actual-stub.py" ''
+        #!${pkgs.python3}/bin/python3
+        import json
+        from http.server import HTTPServer, BaseHTTPRequestHandler
+
+        class StubHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response = {"status": "ok", "data": {"token": "fake-token"}}
+                self.wfile.write(json.dumps(response).encode())
+
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response = {"status": "ok", "data": {"bootstrapped": True}}
+                self.wfile.write(json.dumps(response).encode())
+
+            def log_message(self, format, *args):
+                pass
+
+        HTTPServer(('127.0.0.1', 5006), StubHandler).serve_forever()
+      '';
     in
     {
       imports = [
         self.nixosModules.default
       ];
 
-      nixpkgs.overlays = [
-        self.overlays.default
-      ];
+      networking.useDHCP = false;
+      virtualisation = {
+        cores = 4;
+        memorySize = 2048;
+      };
 
       services.postgresql = {
         enable = true;
@@ -56,7 +83,7 @@ pkgs.testers.runNixOSTest {
         description = "Stub Actual Server for testing";
         wantedBy = [ "multi-user.target" ];
         serviceConfig = {
-          ExecStart = "${pkgs.python3}/bin/python3 -m http.server 5006 --bind 127.0.0.1";
+          ExecStart = "${fakeActualServer}";
           Restart = "always";
         };
       };
@@ -66,6 +93,7 @@ pkgs.testers.runNixOSTest {
     machine.wait_for_unit("postgresql.service")
     machine.wait_for_unit("actual-stub.service")
     machine.wait_for_unit("api-actual.service")
+    machine.wait_for_open_port(4100)
 
     # 1. Assert healthz returns 200 and {"status":"ok"}
     out = machine.succeed("curl -sf http://127.0.0.1:4100/healthz")

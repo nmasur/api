@@ -25,4 +25,4 @@ jobs:
         run: nix build .#packages.x86_64-linux.api-actual
 
       - name: Run unit test suite
-        run: nix develop --command bash -c "cd backends/actual && npm test"
+        run: nix develop --command bash -c "cd backends/actual && npm ci && npm test"

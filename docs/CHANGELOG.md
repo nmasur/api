@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-12: Fix Nix flake check and VM test suite
+
+- Resolved `nixpkgs.overlays` conflict in NixOS VM check (`nix/checks/actual-vm.nix`) by removing redundant node overlay that clashed with read-only NixOS evaluation when `pkgs` is passed to `runNixOSTest`.
+- Updated `services.api.backends.actual` NixOS module (`nix/modules/backends/actual.nix`) to order `api-actual.service` after `postgresql-setup.service` so database and role creation finish before migrations run.
+- Replaced basic static Python HTTP server in `actual-vm.nix` with a JSON-capable stub handler for `@actual-app/api` upstream `/account/login` authentication.
+- Added `machine.wait_for_open_port(4100)` in `actual-vm.nix` test script to ensure HTTP service is accepting traffic before curl assertions run.
+- Configured VM execution parameters (`networking.useDHCP = false`, 4 cores, 2048MB RAM) for fast startup and reliable execution in headless test runners.
+- Fixed GitHub Actions CI workflow step to run `npm ci` prior to `npm test`.
+
 ## 2026-09-12: Complete documentation and GitHub Actions CI workflow
 
 - Added detailed user-facing documentation for the Actual Budget backend in `docs/backends/actual.md` covering endpoints, schemas, account resolution order, idempotency, and iOS Shortcut configuration.
