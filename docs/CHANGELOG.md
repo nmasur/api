@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-12: Implement transaction creation, card mappings, and idempotency
+
+- Added tap-to-pay transaction endpoint (`POST /budgets/:budget/transactions`) with automatic currency-to-cents conversion, category matching, and account resolution (explicit account -> card mapping -> default account).
+- Implemented request de-duplication with deterministic idempotency keys and `transaction_log` audit trail.
+- Implemented card-to-account mapping CRUD endpoints (`GET`, `PUT`, `DELETE` under `/budgets/:budget/mappings`).
+- Added transaction query (`GET /budgets/:budget/transactions`) and audit log retrieval (`GET /budgets/:budget/log`).
+- Added comprehensive unit and integration tests covering idempotency, mappings, and failure recovery.
+
 ## 2026-09-12: Implement Actual client with multi-budget mutex and budget query endpoints
 
 - Created `@actual-app/api` wrapper (`src/actual/client.ts`) with `AsyncMutex` for single-process multi-budget switching, caching, and lifecycle management.

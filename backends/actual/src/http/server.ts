@@ -7,6 +7,8 @@ import { createAuthHook } from './auth.js';
 import { handleFastifyError, UnsupportedMediaTypeError } from './errors.js';
 import { createHealthRoutes } from './routes/health.js';
 import { createBudgetRoutes } from './routes/budgets.js';
+import { createMappingsRoutes } from './routes/mappings.js';
+import { createTransactionsRoutes } from './routes/transactions.js';
 import { pingRoutes } from './routes/ping.js';
 
 export interface BuildServerOptions {
@@ -98,6 +100,14 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
 
   if (options.actualClient) {
     fastify.register(createBudgetRoutes({ config, client: options.actualClient }));
+  }
+
+  if (pool) {
+    fastify.register(createMappingsRoutes({ config, pool }));
+  }
+
+  if (pool && options.actualClient) {
+    fastify.register(createTransactionsRoutes({ config, client: options.actualClient, pool }));
   }
 
   return fastify;
