@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-12: Package api-actual with Nix buildNpmPackage, overlay, and flake outputs
+
+- Packaged `api-actual` in `backends/actual/package.nix` with `buildNpmPackage`, native sqlite/node-gyp dependencies, and embedded migration SQL files.
+- Added Nix overlay in `nix/overlay.nix` exposing `pkgs.api-actual`.
+- Configured flake outputs for `packages`, `overlays`, `devShells`, and `checks` across Darwin and Linux architectures.
+- Verified binary compilation and runtime execution against health endpoint.
+
 ## 2026-09-12: Implement transaction creation, card mappings, and idempotency
 
 - Added tap-to-pay transaction endpoint (`POST /budgets/:budget/transactions`) with automatic currency-to-cents conversion, category matching, and account resolution (explicit account -> card mapping -> default account).

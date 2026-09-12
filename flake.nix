@@ -13,12 +13,28 @@
       flake-utils,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
+    let
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+    in
+    flake-utils.lib.eachSystem supportedSystems (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlays.default ];
+        };
       in
       {
+        packages = rec {
+          api-actual = pkgs.api-actual;
+          default = api-actual;
+        };
+
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             nodejs_22
@@ -36,7 +52,14 @@
           '';
         };
 
+        checks = {
+          api-actual = pkgs.api-actual;
+        };
+
         formatter = pkgs.nixfmt-tree;
       }
-    );
+    )
+    // {
+      overlays.default = import ./nix/overlay.nix;
+    };
 }
