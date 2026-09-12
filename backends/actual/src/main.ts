@@ -1,4 +1,5 @@
 import { loadConfig } from './config.js';
+import { runMigrations } from './db/migrate.js';
 import { createPool } from './db/pool.js';
 import { buildServer } from './http/server.js';
 
@@ -35,6 +36,19 @@ async function main(): Promise<void> {
 
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
   process.on('SIGINT', () => void shutdown('SIGINT'));
+
+  try {
+    const applied = await runMigrations(pool);
+    if (applied > 0) {
+      server.log.info({ applied }, `Applied ${applied} database migration(s)`);
+    } else {
+      server.log.info('Database migrations are up to date');
+    }
+  } catch (err) {
+    server.log.error({ err }, 'Failed to run database migrations');
+    await pool.end();
+    process.exit(1);
+  }
 
   try {
     const address = await server.listen({

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-12: Implement database migrations and initial schema
+
+- Added database migration runner (`src/db/migrate.ts`) tracking applied migrations in `schema_migrations` with sha256 checksums and transaction safety.
+- Created `0001_init.sql` schema defining `budgets_seen`, `card_mappings`, and `transaction_log` tables with indexes.
+- Integrated migrations into backend startup lifecycle in `src/main.ts`.
+- Added test suite verifying idempotency and tamper detection against PostgreSQL.
+
 ## 2026-09-11: Initial project scaffold and test endpoints
 
 - Initialized flake development environment (`flake.nix`, `flake.lock`) supporting Darwin and Linux across x86_64 and aarch64 with Node.js 22, TypeScript, PostgreSQL 15, and nixfmt.
