@@ -52,13 +52,12 @@
           '';
         };
 
-        checks =
-          {
-            api-actual = pkgs.api-actual;
-          }
-          // (pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-            actual-vm = pkgs.callPackage ./nix/checks/actual-vm.nix { inherit self; };
-          });
+        checks = {
+          api-actual = pkgs.api-actual;
+        }
+        // (pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          actual-vm = pkgs.callPackage ./nix/checks/actual-vm.nix { inherit self; };
+        });
 
         formatter = pkgs.nixfmt-tree;
       }

@@ -126,8 +126,7 @@ in
         ++ lib.concatLists (
           lib.mapAttrsToList (
             name: b:
-            [ b.syncIdFile ]
-            ++ (lib.optional (b.encryptionPasswordFile != null) b.encryptionPasswordFile)
+            [ b.syncIdFile ] ++ (lib.optional (b.encryptionPasswordFile != null) b.encryptionPasswordFile)
           ) cfg.budgets
         );
 

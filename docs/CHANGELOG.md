@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-12: Complete documentation and GitHub Actions CI workflow
+
+- Added detailed user-facing documentation for the Actual Budget backend in `docs/backends/actual.md` covering endpoints, schemas, account resolution order, idempotency, and iOS Shortcut configuration.
+- Updated `README.md` with consuming guidelines for NixOS/dotfiles, development quickstart, and process and HTTP contracts for writing new backends.
+- Added GitHub Actions workflow (`.github/workflows/ci.yml`) running flake checks, package building, and test suites on push and pull requests.
+
 ## 2026-09-12: Implement NixOS modules and VM integration test
 
 - Created `services.api` top-level NixOS module in `nix/modules/api.nix` with dynamic Caddy JSON routes generation and local PostgreSQL management options.
