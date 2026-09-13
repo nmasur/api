@@ -25,7 +25,8 @@ export class AppError extends Error {
 
 export class AccountUnresolvedError extends AppError {
   constructor(message: string, accounts: string[]) {
-    super(400, 'account_unresolved', message, undefined, accounts);
+    // Note: Returns 200 instead of 400 so Apple Shortcuts doesn't immediately halt execution
+    super(200, 'account_unresolved', message, undefined, accounts);
   }
 }
 
